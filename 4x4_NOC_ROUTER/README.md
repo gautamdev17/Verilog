@@ -59,3 +59,42 @@ Acts as a set of multiplexers forwarding flits to OUT0–OUT3.
 - `crossbar.v`  
 - `router_4x4.v`  
 - `router_tb.v`
+
+# 7-Day Plan: 4×4 NoC Router (Verilog)
+
+## Day 1 — Architecture
+- Define flit format (32-bit).
+- Draw block diagram.
+- Finalize FIFO depth, arbitration type, crossbar style.
+- Create repo + README.
+
+## Day 2 — FIFO
+- Write `fifo.v` (parametric).
+- Implement full/empty logic.
+- Test with `fifo_tb.v`.
+
+## Day 3 — Route Compute + Requests
+- Write `route_compute.v`.
+- Extract dest bits from flit.
+- Build 4×4 request matrix inside router.
+
+## Day 4 — Arbiters
+- Write `arbiter.v` (4-input → 1-hot).
+- Test separately.
+- Instantiate 4 arbiters in router.
+
+## Day 5 — Crossbar
+- Write `crossbar.v`.
+- Use grant signals to drive OUT0–OUT3.
+- Integrate into top-level.
+
+## Day 6 — Full Integration
+- Connect FIFO → RC → Request → Arbiter → Crossbar.
+- Write `router_tb.v`.
+- Test basic and contention cases.
+
+## Day 7 — Polish & Document
+- Clean RTL comments.
+- Add diagrams + examples to README.
+- Organize repo (`rtl/`, `tb/`, `docs/`).
+- Final testing + push to GitHub.
