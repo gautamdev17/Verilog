@@ -1,55 +1,61 @@
-# 4×4 Network-on-Chip (NoC) — Compact Overview
+# 4×4 NoC Router (Verilog)
 
-## What
-A Network-on-Chip (NoC) is a packet-switched communication fabric inside a chip.  
-This project implements a 4×4 2D mesh where each tile connects to a 5-port router  
-(North, South, East, West, Local).
+## Overview
+A 4×4 Network-on-Chip (NoC) router is a synchronous digital design block with four input ports and four output ports. It forwards fixed-width data units (flits) from any input to any output based on a destination field inside each flit.  
+This router structure is commonly used inside CPUs, GPUs, DSPs, and accelerator SoCs.
 
-## Why
-Traditional interconnects do not scale:
-- Buses = bottleneck
-- Crossbars = O(N^2) area
-- Point-to-point = wiring explosion  
-NoCs provide scalable, modular, parallel communication with predictable routing  
-and better area/power/timing behavior.
+---
 
-## How (Data Flow)
-1. Incoming flit enters an input FIFO.  
-2. Routing unit (XY routing) chooses output port based on destination.  
-3. Arbiter resolves multiple requests for the same output.  
-4. Crossbar connects selected input to output.  
-5. Flow control (credit or valid/ready) ensures buffers never overflow.  
-Flits hop router-to-router until reaching the local port of the destination.
+## Flit Format (32-bit)
+- **Bits 31–30:** Destination port (0–3)
+- **Bits 29–0:** Payload data
 
-## Components
-- Input FIFOs (one per port)  
-- Routing Computation (XY)  
-- Switch Allocator / Arbiter  
-- 5×5 Crossbar  
-- Flow Control Logic  
-- Mesh interconnect (16 routers)
+Destination mapping:
+- `00` → OUT0  
+- `01` → OUT1  
+- `10` → OUT2  
+- `11` → OUT3  
 
-## Packet Format (Example)
-Header flit:
-DEST_X (2b), DEST_Y (2b), TYPE (2b), PAYLOAD  
-Body flits carry remaining data.
+---
 
-## Requirements
-- Correct packet delivery  
-- Deadlock-free routing (XY)  
-- Fair arbitration  
-- Efficient flow control  
-- Area/power balanced buffers  
-- Scalable timing and routing on chip
+## Architecture Stages
 
-## Suggested Directory Structure
-/rtl -> router, fifo, routing, arbiter, crossbar, mesh_top  
-/tb  -> router_tb, mesh_tb  
-/docs -> diagrams, README
+### 1. Input FIFOs
+Each input port has a FIFO buffer that stores flits and handles congestion when multiple inputs target the same output.
 
-## Verification Checklist
-- FIFO behavior  
-- Single-hop and multi-hop routing  
-- Arbitration fairness  
-- Flow control correctness  
-- Stress and saturation traffic tests
+### 2. Route Computation
+Extracts the 2-bit destination field from each FIFO’s head flit to determine the output port it requests.
+
+### 3. Request Matrix (4×4)
+Generates a matrix `req[i][j]` where:
+- `i` = input port (0–3)
+- `j` = output port (0–3)
+- `req[i][j] = 1` if input *i* requests output *j*
+
+### 4. Output Arbitration
+Each output port has its own arbiter.  
+It inspects the requests for that output and selects one input (fixed-priority or round-robin).  
+Outputs a one-hot `grant` signal.
+
+### 5. 4×4 Crossbar
+Uses grant signals to connect the winning input to its corresponding output.  
+Acts as a set of multiplexers forwarding flits to OUT0–OUT3.
+
+---
+
+## Data Flow Summary
+1. Flits arrive at IN0–IN3 and enter their FIFOs.  
+2. Route computation extracts destination bits.  
+3. A request matrix is generated.  
+4. Each output arbiter selects one requesting input.  
+5. The crossbar forwards the selected flits to OUT0–OUT3.
+
+---
+
+## Typical File Structure
+- `fifo.v`  
+- `route_compute.v`  
+- `arbiter.v`  
+- `crossbar.v`  
+- `router_4x4.v`  
+- `router_tb.v`
