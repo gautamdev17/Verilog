@@ -2,7 +2,7 @@
 2.rd,wr width = log2depth
 commands:
 1.only write--->full? refuse, else write at wr_ptr, wr_ptr++
-2.only read--->empty? refuse, else read at wr_ptr, wr_ptr++
+2.only read--->empty? refuse, else read at rd_ptr, rd_ptr++
 3.write+read--->full or not full and not empty?read,then write
             --->empty?write only
 how to check empty or full?
