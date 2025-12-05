@@ -8,3 +8,4 @@ commands:
 how to check empty or full?
   empty = rd_ptr==wr_ptr
   full = (wr_ptr==depth-1 and rd_ptr==0) or (rd_ptr-wr_ptr==001)
+on reset---> rd,wr ptr become zero, dataout is also set to zero
