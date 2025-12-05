@@ -1,6 +1,6 @@
 1.create mem data_widthxdepth
 2.rd,wr width = log2depth
-3..count = 0
+3..count width = lod2(depth+1)
 commands:
 1.only write--->full? refuse, else write at wr_ptr, (wr_ptr++)%depth count++
 2.only read--->empty? refuse, else read at rd_ptr, (rd_ptr++)%depth count--
