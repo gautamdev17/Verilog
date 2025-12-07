@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 //sync fifo
-module fifo #(parameter DATA_WIDTH=32,parameter DEPTH=8) 
+module fifo #(parameter DATA_WIDTH=32,parameter DEPTH=8)
   (input clk,rst,rd_en,wr_en,input [DATA_WIDTH-1:0] data_in,output full,empty,output reg [DATA_WIDTH-1:0] data_out);
   localparam ADDR_WIDTH = (DEPTH>1)?$clog2(DEPTH):1; //address width
   reg [ADDR_WIDTH-1:0]wr_ptr,rd_ptr; // for pointers // extra bit for checking full condition
