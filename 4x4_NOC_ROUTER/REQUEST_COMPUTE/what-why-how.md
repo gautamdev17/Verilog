@@ -27,3 +27,32 @@ RC decides **which output port** (N, S, E, W, Local) the packet must take next �
 - RC must be gated by FIFO `valid`/`not empty` — don’t run on empty FIFO.  
 - For wormhole routing, RC runs only on header; subsequent flits follow the chosen route.  
 - RC output feeds the Request Matrix, which the Switch Allocator reads to resolve conflicts.
+
+## Why Route Compute (RC) compares destination vs router ID
+
+A router sits inside a grid of many routers.  
+When a packet arrives, the router must decide whether:
+
+1. **This router is the packet’s final destination**, or  
+2. **The packet must be forwarded**, and if so, **in which direction**.
+
+The only way to make that decision is to **compare**:
+
+- The packet’s destination address (from the header flit)  
+- The router’s own address (hardwired as its ID or (x,y) coordinate)
+
+### Why comparison is essential
+- If the destination equals the router’s ID → deliver to LOCAL port.  
+- If the destination is to the right → forward EAST.  
+- If the destination is to the left → forward WEST.  
+- If the destination is above → forward NORTH.  
+- If the destination is below → forward SOUTH.
+
+Without comparing, the router has **no idea** whether the packet:
+- has reached its final node, or  
+- must continue traveling in the mesh, and  
+- what direction it must travel.
+
+### Summary
+The comparison step is the core decision-making action of RC.  
+It turns the destination address inside the packet into a **directional routing choice**, enabling the router to forward packets through the network correctly.
