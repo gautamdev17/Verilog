@@ -1,3 +1,5 @@
+                                tldr_basic_flow_of_a_data_packet
+
 ill tell the flow of a single datapacket.
 packet enters an input.
 is written into a fifo and then read in the next clock cycle(if that input port was a winner the previous clock cycle or if its a loser it has to wait)
