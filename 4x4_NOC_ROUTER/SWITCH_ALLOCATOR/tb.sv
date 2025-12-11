@@ -1,13 +1,14 @@
 `timescale 1ns/1ps
 
-module SA_tb();
+module SA_tb;
 
   reg  [24:0] reqMat;
-  reg  clk, rst;
+  reg         clk, rst;
   wire [14:0] selsignal;
   wire [4:0]  fifo_pop;
+  int i; // <-- declare here
 
-  switch_allocator inst1 (
+  switch_allocator dut (
     .reqMat(reqMat),
     .clk(clk),
     .rst(rst),
@@ -19,7 +20,8 @@ module SA_tb();
   always #5 clk = ~clk;
 
   initial begin
-    $monitor("t=%0t reqMat=%h sel=%o pop=%b",
+    $display(" time     reqMat         sel    pop");
+    $monitor("%4t   %07h    %05o   %05b",
              $time, reqMat, selsignal, fifo_pop);
   end
 
@@ -29,11 +31,40 @@ module SA_tb();
     @(posedge clk); @(posedge clk);
     rst = 0;
 
-    @(posedge clk); reqMat = 25'h24802;
-    @(posedge clk); reqMat = 25'h11111;
-    @(posedge clk); reqMat = 25'h08241;
-    @(posedge clk); reqMat = 25'h00001;
-    @(posedge clk); reqMat = 25'h10000;
+    // NO REQUEST
+    @(posedge clk) reqMat = 25'h0000000;
+
+    // SINGLE REQUEST FOR ALL 25 POSITIONS
+    for (i = 0; i < 25; i = i + 1) begin
+      @(posedge clk);
+      reqMat = 0;
+      reqMat[i] = 1'b1;
+    end
+
+    // ROW SWEEP
+    @(posedge clk) reqMat = 25'b00000_00000_00000_00000_11111;
+    @(posedge clk) reqMat = 25'b00000_00000_00000_11111_00000;
+    @(posedge clk) reqMat = 25'b00000_00000_11111_00000_00000;
+    @(posedge clk) reqMat = 25'b00000_11111_00000_00000_00000;
+    @(posedge clk) reqMat = 25'b11111_00000_00000_00000_00000;
+
+    // COLUMN SWEEP
+    @(posedge clk) reqMat = 25'b00001_00001_00001_00001_00001;
+    @(posedge clk) reqMat = 25'b00010_00010_00010_00010_00010;
+    @(posedge clk) reqMat = 25'b00100_00100_00100_00100_00100;
+    @(posedge clk) reqMat = 25'b01000_01000_01000_01000_01000;
+    @(posedge clk) reqMat = 25'b10000_10000_10000_10000_10000;
+
+    // RANDOM PATTERNS
+    @(posedge clk) reqMat = 25'h24802;
+    @(posedge clk) reqMat = 25'h11111;
+    @(posedge clk) reqMat = 25'h08241;
+
+    // RANDOM STRESS
+    repeat (10) begin
+      @(posedge clk);
+      reqMat = $urandom;
+    end
 
     @(posedge clk);
     $finish;
