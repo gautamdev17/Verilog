@@ -40,7 +40,7 @@ Outputs a one-hot `grant` signal.
 
 ### 5. Crossbar
 Uses grant signals to connect the winning input to its corresponding output.  
-Acts as a set of multiplexers forwarding flits to OUT0–OUT3.
+Acts as a set of multiplexers forwarding flits to NSEWL.
 
 ---
 
