@@ -1,8 +1,7 @@
-// TESTBENCH
 `timescale 1ns/1ps
 module fifo_tb();
   parameter DATA_WIDTH = 4;
-  parameter DEPTH      = 5;
+  parameter DEPTH      = 4;
 
   reg clk,rst,rd_en,wr_en;
   reg  [DATA_WIDTH-1:0] data_in;
