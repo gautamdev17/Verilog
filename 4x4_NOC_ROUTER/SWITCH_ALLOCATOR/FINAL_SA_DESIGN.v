@@ -7,46 +7,46 @@ start from ptr per column and if 1 detected give that the grant and set ptr = gr
 send grants as 3bit binary encoded values since it saves up space and send as sel signal*/
 
 
-// switched to system verilog since verilog didnt allow dynamic slicing
-// use dynamic part-select base +: width
+// switched to system verilog since verilog dint allow dynamic slicing
+// selsignal for an output port will be given 111 if no winnners are there for that specific direction/output port
 `timescale 1ns/1ps
 
 module switch_allocator(
-  input  logic [24:0] reqMat,
+  input logic reqMat [4:0][4:0],
   input  logic clk,
   input  logic rst,
   output logic [2:0] selsignal [4:0], //select winners for each direction
-  output logic [4:0] fifo_pop //winnner inputs are popped and next header flit is read for the nxt cycle
-// losers arent popped and have to wait the next clock efge
+  output logic [4:0] fifo_pop //winner inputs are popped
 );
-  //use 15 bit for SEL SIGNAL represent each winner of an output port in 3 bits
-  reg [2:0]rrbptr [4:0];
+  logic [2:0] rrbptr [4:0];
   integer i,j,k;
-  logic f; // f is flag
-  
+  logic f;
+
   always_ff @(posedge clk) begin
-    if (rst) begin
-      for(i=0;i<5;i=i+1) begin
+    if (rst) begin // reset all
+      for (i=0; i<5; i=i+1) begin
         rrbptr[i]<=3'b0;
-        selsignal[i]<=3'b0;
+        selsignal[i]<=3'b111;//no winner in that direction(output)
       end
-    	  fifo_pop<=5'b0;
+      fifo_pop <= 5'b0;
     end else begin
-      for(i=0;i<5;i=i+1) begin
-        selsignal[i]<=3'b0;
+      //initialize everythign again for nxt clock
+      for (i=0; i<5; i=i+1) begin
+        selsignal[i] <= 3'b111;//default->no winner
       end
-      fifo_pop <= 0;
-      for (i=0;i<5;i=i+1) begin //go to each direction
-        f=0;k=0;
+      fifo_pop <= 5'b0;
+
+      for (i=0; i<5; i=i+1) begin// go into each direction(outputport) // take each column each time
+        f = 1'b0;
+        k = 0;
         // run from rrb to a full circle
-        for (j=rrbptr[i];k!= 5;j=(j==4)?0:j+1) begin
-          k=k+1;
-          if (reqMat[i*5+j]==1'b1 && !f) begin
-            //bro so im doing dynamic slicing here and this is the format in sv
-            selsignal[i]<=j[2:0];//assign winner to respective direction
-            rrbptr[i]<=(j==4)?3'b0:j+1;//rrb ptr will change for nxt cucle
-            fifo_pop[j]<=1'b1;//pop the fifo for winner inputs
-            f=1; //stop here running the inner loop, winner found
+        for (j = int'(rrbptr[i]); k < 5; j = (j==4) ? 0 : j+1) begin // go into that column, pick the rows
+          k = k + 1;
+          if (reqMat[j][i] == 1'b1 && !f) begin
+            selsignal[i] <= logic'(j);//winner for output i
+            rrbptr[i] <= (j == 4) ? 3'b0 : j+1;
+            fifo_pop[j] <= 1'b1;//pop the winner input port.the losers have to wait next clk cyckle and they dont get a chance to be popped now
+            f = 1'b1; // break, stop running into that port and go to next
           end
         end
       end
