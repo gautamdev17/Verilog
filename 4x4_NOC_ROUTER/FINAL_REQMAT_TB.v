@@ -1,5 +1,4 @@
 `timescale 1ns/1ps
-
 module tb();
   reg [4:0] rc0,rc1,rc2,rc3,rc4;
   wire [24:0]reqMat;
