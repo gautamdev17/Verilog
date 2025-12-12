@@ -16,10 +16,13 @@ So each mem[i] is one full DATA_WIDTH-bit flit.*/
   wire [ADDR_WIDTH-1:0] next_wr = (wr_ptr == DEPTH-1) ? 0 : wr_ptr + 1'b1; // hardware synthesis of % is hard, so im conditions instead
   assign full = (next_wr == rd_ptr);
   // assign full = ({~wr_ptr[ADDR_WIDTH],wr_ptr[ADDR_WIDTH-1:0]}==rd_ptr); only works for DEPTH = 2^n;
+  integer i;
   always@(posedge clk) begin//read
     if(rst) begin
       	rd_ptr<=0;
     	data_out<=0;
+		for(i=0;i<DEPTH;i++)
+			mem[i]<=0;
     end
     else if(rd_en && !empty) begin
         data_out<=mem[rd_ptr];
